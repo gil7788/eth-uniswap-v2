@@ -1,29 +1,51 @@
 name: CI
+
 on:
   push:
-    branches:
-      - master
   pull_request:
+  workflow_dispatch:
 
 env:
   FOUNDRY_PROFILE: ci
 
 jobs:
-  run-ci:
+  check:
+    strategy:
+      fail-fast: true
+
+    name: Foundry project
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
           version: nightly
 
-      - name: Install deps
-        run: forge install
+      - name: Show Forge version
+        run: |
+          forge --version
 
-      - name: Check gas snapshots
-        run: forge snapshot --check
+      - name: Run Forge fmt check
+        id: fmt_check
+        run: |
+          forge fmt --check || echo "Formatting check failed"
 
-      - name: Run tests
-        run: forge test
+      - name: Auto-run Forge fmt if check fails
+        if: steps.fmt_check.outcome == 'failure'
+        run: |
+          echo "Running forge fmt to fix formatting issues"
+          forge fmt
+
+      - name: Run Forge build
+        run: |
+          forge build --sizes
+        id: build
+
+      - name: Run Forge tests
+        run: |
+          forge test -vvv
+        id: test

@@ -26,21 +26,13 @@ contract LPTokenTest is Test {
     }
 
     function testInitialSupply() public {
-        assertEq(
-            token.totalSupply(),
-            initialSupply,
-            "Total supply should match initial supply"
-        );
+        assertEq(token.totalSupply(), initialSupply, "Total supply should match initial supply");
         assertEq(
             token.balanceOf(owner),
             initialSupply - user1InitialBalance,
             "Owner should hold the initial supply minus user1's initial balance"
         );
-        assertEq(
-            token.balanceOf(user1),
-            user1InitialBalance,
-            "User1 should hold the initial transferred balance"
-        );
+        assertEq(token.balanceOf(user1), user1InitialBalance, "User1 should hold the initial transferred balance");
     }
 
     function testNameAndSymbol() public {
@@ -54,15 +46,9 @@ contract LPTokenTest is Test {
 
         vm.prank(user1);
         token.transfer(user2, transferAmount);
+        assertEq(token.balanceOf(user2), transferAmount, "User2 should receive the transfer amount");
         assertEq(
-            token.balanceOf(user2),
-            transferAmount,
-            "User2 should receive the transfer amount"
-        );
-        assertEq(
-            token.balanceOf(user1),
-            user1InitialBalance - transferAmount,
-            "User1 balance should decrease accordingly"
+            token.balanceOf(user1), user1InitialBalance - transferAmount, "User1 balance should decrease accordingly"
         );
     }
 
@@ -85,11 +71,7 @@ contract LPTokenTest is Test {
     function testApproveAndAllowance() public {
         uint256 approveAmount = 200 * 10 ** 18;
         token.approve(user1, approveAmount);
-        assertEq(
-            token.allowance(owner, user1),
-            approveAmount,
-            "Allowance should match approved amount"
-        );
+        assertEq(token.allowance(owner, user1), approveAmount, "Allowance should match approved amount");
     }
 
     function testTransferFromWithAllowance() public {
@@ -100,11 +82,7 @@ contract LPTokenTest is Test {
         vm.prank(user1); // user1 will call the function
         token.transferFrom(owner, user2, transferAmount);
 
-        assertEq(
-            token.balanceOf(user2),
-            transferAmount,
-            "User2 should receive the transfer amount"
-        );
+        assertEq(token.balanceOf(user2), transferAmount, "User2 should receive the transfer amount");
         assertEq(
             token.balanceOf(owner),
             initialSupply - user1InitialBalance - transferAmount,
@@ -121,31 +99,19 @@ contract LPTokenTest is Test {
         uint256 maxAllowance = type(uint256).max;
         token.approve(user1, maxAllowance);
 
-        assertEq(
-            token.allowance(owner, user1),
-            maxAllowance,
-            "Allowance should be set to max"
-        );
+        assertEq(token.allowance(owner, user1), maxAllowance, "Allowance should be set to max");
 
         // Test transferFrom with max allowance
         uint256 transferAmount = 500 * 10 ** 18;
         vm.prank(user1);
         token.transferFrom(owner, user2, transferAmount);
 
-        assertEq(
-            token.balanceOf(user2),
-            transferAmount,
-            "User2 should receive the transfer amount"
-        );
+        assertEq(token.balanceOf(user2), transferAmount, "User2 should receive the transfer amount");
         assertEq(
             token.balanceOf(owner),
             initialSupply - user1InitialBalance - transferAmount,
             "Owner balance should decrease"
         );
-        assertEq(
-            token.allowance(owner, user1),
-            maxAllowance,
-            "Allowance should remain unchanged for max allowance"
-        );
+        assertEq(token.allowance(owner, user1), maxAllowance, "Allowance should remain unchanged for max allowance");
     }
 }
